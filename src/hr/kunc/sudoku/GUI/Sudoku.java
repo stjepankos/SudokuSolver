@@ -1,4 +1,4 @@
-package hr.kunc.sudoku;
+package hr.kunc.sudoku.GUI;
 
 
 public class Sudoku {
@@ -15,11 +15,12 @@ public class Sudoku {
             {6,0,0,2,7,0,0,0,3}
 
     };
-    private int[][] board;
+    public int[][] board;
     public static final int EMPTY = 0; // Empty cell
     public static final int SIZE =9; // X and Y dimension
-
-    public Sudoku(int[][] board){
+    private GUI gui;
+    public Sudoku(GUI gui,int[][] board){
+        this.gui =gui;
         this.board=new int[SIZE][SIZE];
         for (int i=0; i<SIZE;i++){
             for (int j=0;j<SIZE;j++){            //Arraycopy could be used:
@@ -28,7 +29,7 @@ public class Sudoku {
         }
     }
 
-    private boolean isInRow(int x,int number){  //Checks if number is already in the row
+    public boolean isInRow(int x,int number, int[][] board){  //Checks if number is already in the row
         for (int i=0;i<SIZE;i++){
             if (board[x][i]==number){
                 return true;
@@ -36,7 +37,7 @@ public class Sudoku {
         }
         return false;
     }
-    private boolean isInCol(int y, int number){  //Checks if number is already in the column
+    public boolean isInCol(int y, int number, int[][] board){  //Checks if number is already in the column
         for (int j=0;j<SIZE;j++){
             if (board[j][y]==number){
                 return true;
@@ -44,7 +45,7 @@ public class Sudoku {
         }
         return false;
     }
-    private boolean isInSquare(int x, int y, int number){ //Checks if number is already in 3x3 box
+    public boolean isInSquare(int x, int y, int number, int[][] board){ //Checks if number is already in 3x3 box
         int r= x-x%3;
         int c= y-y%3;
         for (int i=r;i<r+3;i++){
@@ -58,21 +59,23 @@ public class Sudoku {
     }
 
     // Checks if everything returns true
-    private boolean isPossible(int x, int y, int number){
-        return !isInRow(x,number) && !isInCol(y,number) && !isInSquare(x,y,number);
+    public boolean isPossible(int x, int y, int number, int[][] board){
+        return !isInRow(x,number,board) && !isInCol(y,number,board) && !isInSquare(x,y,number,board);
     }
 
-    //Solving method using Backtracking algorithm
+
+
+//    Solving method using Backtracking algorithm (without gui)
     public boolean solve(){
         for (int x=0;x<SIZE;x++){
             for (int y=0;y<SIZE;y++){
-                if (board[x][y]==EMPTY) { //finding an empty cell
+                if (board[x][y]==EMPTY) {                         //finding an empty cell
                     for (int number = 1; number < 10; number++) { //Try all numbers 1-9
-                        if (isPossible(x, y, number)) { //Number follows the rules
+                        if (isPossible(x, y, number,board)) {           //Number follows the rules
                             board[x][y] = number;
-                            if (solve()) {    //The core of the algorithm, we start backtracking recursively
+                            if (solve()) {
                                 return true;
-                            } else {                  //if not a solution, empty the cell and continue
+                            } else {                             //if not a solution, empty the cell and continue
                                 board[x][y] = EMPTY;
                             }
                         }
@@ -101,15 +104,32 @@ public class Sudoku {
         System.out.println();
     }
 
-    public static void main(String[] args) {
-        Sudoku sudoku = new Sudoku(GRID);
-        System.out.println("Sudoku Grid to solve:"); //Prints original
-        sudoku.print();
-        if (sudoku.solve()){
-            System.out.println("Sudoku is solved:");
-            sudoku.print();
-        }else{
-            System.out.println("The grid is unsolvable");
+    public void addSolved(){
+        if (solve()) {
+            for (int i = 0; i < 9; i++) {
+                for (int j = 0; j < 9; j++) {
+                    gui.gridSolved[i][j] = board[i][j];
+                }
+            }
         }
     }
+
+    public void resetBoard(){
+        this.board=new int[SIZE][SIZE];
+        for (int i=0; i<SIZE;i++){
+            System.arraycopy(gui.grid[i], 0, this.board[i], 0, SIZE);
+        }
+    }
+
+    //    public static void main(String[] args) {
+//        Sudoku sudoku = new Sudoku(GRID);
+//        System.out.println("Sudoku Grid to solve:"); //Prints original
+//        sudoku.print();
+//        if (sudoku.solve()){
+//            System.out.println("Sudoku is solved:");
+//            sudoku.print();
+//        }else{
+//            System.out.println("The grid is unsolvable");
+//        }
+//    }
 }
